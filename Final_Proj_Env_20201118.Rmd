@@ -1,0 +1,62 @@
+---
+title: "Final_Proj_20201118tt"
+author: "Takeo_Tokunari"
+date: "11/18/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+```
+
+```{r}
+forest <- read.csv("forest.csv")
+water <- read.csv("Water_per_Capita.csv")
+population <- read.csv("population_world.csv")
+
+forest_mutate <- forest %>% 
+  select(CountryID, Country.and.Area, Forest.loss...1990.2020, Losing.forest.in.the.last.30.years.) %>% 
+  arrange(Forest.loss...1990.2020)
+
+water_mutate <- water %>% 
+  select(CountryID, Country, Coef)
+
+forest_and_water <- forest %>% 
+  inner_join(water, by = "CountryID")
+
+forest_and_water
+
+forest_and_water_worst <- forest_and_water %>% 
+  arrange(Forest.loss...1990.2020) %>% 
+  slice(1:15)
+
+forest_and_water_best <- forest_and_water %>% 
+  arrange(desc(Forest.loss...1990.2020)) %>% 
+  slice(1:15)
+
+forest_and_water_best_plot <- forest_and_water_best %>% 
+  ggplot(aes(x = Forest.loss...1990.2020, y = Coef)) +
+  geom_point()
+
+forest_and_water_best_plot
+
+forest_and_water_worst_plot <- forest_and_water_worst %>% 
+  ggplot(aes(x = Forest.loss...1990.2020, y = Coef)) +
+  geom_point()
+
+forest_and_water_worst_plot
+
+ate <- forest_and_water %>%
+  group_by(Losing.forest.in.the.last.30.years.) %>% 
+  summarize(mean = mean(Coef)) %>% 
+  summarize(ate = mean[2] - mean[1])
+
+ate
+
+```
+
+
