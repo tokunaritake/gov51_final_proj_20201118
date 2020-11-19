@@ -13,10 +13,18 @@ library(tidyverse)
 
 ```
 
-```{r}
+Here, Albert and I tried to focus on the country-level effect of deforestation on decrease of freshwater resources per capita. 
+Our work process is summarized below:
+1. First, we collected the two separate raw data sets from the Statistics Division of the United Nations: one for deforestation record, another for renewable freshwater resources per capita.
+2. We then cleaned the original data on Excel (e.g. erasing footnotes, texts and values not compatible with CSV format, deleting unnecessary rows). For the deforestation data, we calculated the change of forest area over 30 years from 1990 to 2020 in percent change. Negative value means there was deforestation. For the water resources we ran a linear regression to see the decreasing/increasing trend from 1990 to 2017. The coefficient of the linear regression was stored for each country. Negative value means there was a decreasing trend of renewable water per capita - smaller value means more acute loss of water. 
+3. We converted the excel files into csv files. We loaded the two csv files into R.
+4. After selecting the relevant parameters, we joined the two tables for the analysis. Because the water data is less comprehensive than the deforestation data, some countries were deselected in this inner join process. For example, Cote d'Ivoire was ranked number one in terms of forest loss, but it did not have the data on water per capita.
+
+
+```{r clean up data, echo = FALSE, warning = FALSE, message = FALSE}
 forest <- read.csv("forest.csv")
 water <- read.csv("Water_per_Capita.csv")
-population <- read.csv("population_world.csv")
+#population <- read.csv("population_world.csv")
 
 forest_mutate <- forest %>% 
   select(CountryID, Country.and.Area, Forest.loss...1990.2020, Losing.forest.in.the.last.30.years.) %>% 
@@ -26,9 +34,14 @@ water_mutate <- water %>%
   select(CountryID, Country, Coef)
 
 forest_and_water <- forest %>% 
-  inner_join(water, by = "CountryID")
+  inner_join(water, by = "CountryID") #%>% 
+#  mutate(Losing.forest.in.the.last.30.years. = as.factor(Losing.forest.in.the.last.30.years.)) %>% 
+#  arrange(Losing.forest.in.the.last.30.years.) %>% 
+#  ggplot(aes(x = Forest.loss...1990.2020, y = Coef, color = Losing.forest.in.the.last.30.years.)) +
+#  geom_point() +
+#  labs(title = "Deforestation and freshwater resources per capita", x= "Change of forest area from 1990 to 2020 in %", y = "Coefficient of linear regression \n for freshwater resources per capita")
 
-forest_and_water
+#forest_and_water
 
 forest_and_water_worst <- forest_and_water %>% 
   arrange(Forest.loss...1990.2020) %>% 
@@ -40,13 +53,16 @@ forest_and_water_best <- forest_and_water %>%
 
 forest_and_water_best_plot <- forest_and_water_best %>% 
   ggplot(aes(x = Forest.loss...1990.2020, y = Coef)) +
-  geom_point()
+  geom_point() +
+  labs(title = "Deforestation and freshwater resources per capita", x= "Change of forest area from 1990 to 2020 in %", y = "Coefficient of linear regression \n for freshwater resources per capita")
 
 forest_and_water_best_plot
 
 forest_and_water_worst_plot <- forest_and_water_worst %>% 
   ggplot(aes(x = Forest.loss...1990.2020, y = Coef)) +
-  geom_point()
+  geom_point() +
+  labs(title = "Deforestation and freshwater resources per capita", x= "Change of forest area from 1990 to 2020 in %", y = "Coefficient of linear regression \n for freshwater resources per capita")
+
 
 forest_and_water_worst_plot
 
@@ -59,4 +75,7 @@ ate
 
 ```
 
+5. We analyzed the relationship between the deforestation rates and coefficients of linear regression on change of renewable water resources per capita. We did so for the top 15 countries and worst 15 countries in terms of change in forest areas. That is, the top 15 countries experienced an increase of forest areas while the worst 15 countries saw massive deforestation as of 2020 relative to what they had in 1990.
+6. There was a clear difference in the two groups: the graph on top 15 countries did not show a clear relationship between forest area increase and water resources per capita, while the worst 15 countries generally showed a positive relationship between the two variables, meaning more deforestation yielded less freshwater per capita. 
+7. Lastly, the average treatment effect is analyzed. The ATE of deforestation was `r ate`.
 
